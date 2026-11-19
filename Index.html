@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>Mi Biblioteca</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #222222;
+    }
+
+    header {
+      padding: 15px 0;
+      border-bottom: 1px solid #dddddd;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 600;
+    }
+
+    h2 {
+      margin-top: 30px;
+      font-size: 19px;
+    }
+
+    #listaLibros {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .vacio {
+      padding: 30px 10px;
+      text-align: center;
+      color: #777777;
+      border: 1px dashed #cccccc;
+      border-radius: 8px;
+    }
+
+    .libro {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+    }
+
+    .informacion {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .nombre {
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .formato {
+      display: inline-block;
+      margin-top: 6px;
+      color: #666666;
+      font-size: 12px;
+    }
+
+    .eliminar {
+      padding: 8px 10px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      background: white;
+      color: #333333;
+    }
+
+    .boton-agregar {
+      width: 100%;
+      margin-top: 25px;
+      padding: 15px;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      background: #333333;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #mensaje {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Mi Biblioteca</h1>
+  </header>
+
+  <main>
+    <h2>Mis libros</h2>
+
+    <div id="listaLibros">
+      <div class="vacio">
+        Todavía no tienes libros agregados.
+      </div>
+    </div>
+
+    <button class="boton-agregar" onclick="abrirSelector()">
+      + Agregar libro
+    </button>
+
+    <input
+      type="file"
+      id="archivo"
+      accept="*/*"
+      hidden
+      onchange="agregarLibro(event)"
+    >
+
+    <div id="mensaje"></div>
+  </main>
+
+  <script>
+    let libros = [];
+
+    function abrirSelector() {
+      document.getElementById("archivo").click();
+    }
+
+    function agregarLibro(event) {
+      const archivo = event.target.files[0];
+
+      if (!archivo) return;
+
+      const extension = archivo.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+      if (extension !== "pdf" && extension !== "epub") {
+        mostrarMensaje(
+          "Solo puedes agregar archivos PDF o EPUB.",
+          true
+        );
+        event.target.value = "";
+        return;
+      }
+
+      const existe = libros.some(
+        libro => libro.nombre === archivo.name
+      );
+
+      if (existe) {
+        mostrarMensaje("Este libro ya está en la lista.", true);
+        event.target.value = "";
+        return;
+      }
+
+      libros.push({
+        nombre: archivo.name,
+        formato: extension.toUpperCase()
+      });
+
+      mostrarLibros();
+      mostrarMensaje("Libro agregado correctamente.", false);
+
+      event.target.value = "";
+    }
+
+    function mostrarLibros() {
+      const lista = document.getElementById("listaLibros");
+      lista.innerHTML = "";
+
+      if (libros.length === 0) {
+        lista.innerHTML =
+          '<div class="vacio">Todavía no tienes libros agregados.</div>';
+        return;
+      }
+
+      libros.forEach((libro, indice) => {
+        const elemento = document.createElement("div");
+        elemento.className = "libro";
+
+        const informacion = document.createElement("div");
+        informacion.className = "informacion";
+
+        const nombre = document.createElement("div");
+        nombre.className = "nombre";
+        nombre.textContent = libro.nombre;
+
+        const formato = document.createElement("div");
+        formato.className = "formato";
+        formato.textContent = "Formato: " + libro.formato;
+
+        informacion.appendChild(nombre);
+        informacion.appendChild(formato);
+
+        const boton = document.createElement("button");
+        boton.className = "eliminar";
+        boton.textContent = "Eliminar";
+
+        boton.onclick = () => {
+          libros.splice(indice, 1);
+          mostrarLibros();
+          mostrarMensaje("Libro eliminado de la lista.", false);
+        };
+
+        elemento.appendChild(informacion);
+        elemento.appendChild(boton);
+
+        lista.appendChild(elemento);
+      });
+    }
+
+    function mostrarMensaje(texto, error) {
+      const mensaje = document.getElementById("mensaje");
+      mensaje.textContent = texto;
+      mensaje.style.color = error ? "#c0392b" : "#16806a";
+    }
+  </script>
+
+</body>
+</html>
